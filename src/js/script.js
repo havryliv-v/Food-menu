@@ -188,36 +188,26 @@ window.addEventListener('DOMContentLoaded', () => {
       }
    }
 
-   new MenuCard(     //creating new card with arguments
-      "img/tabs/vegy.jpg",
-      "vegy",
-      'Меню "Фитнес"',
-      'Меню "Фитнес" - это новый подход к приготовлению блюд: больше свежиховощей и фруктов. Продукт активных и здоровых людей.Это абсолютно новый продукт с оптимальной ценой и высоким качеством!',
-      10,
-      '.menu .container',      //way where we push our cards(with spase because it's clild)
-      'menu__item'      //Adding this class to div, so css styles will be used for it, we can put more calss with operator rest
-   ).render();
+   const getResources = async (url) => {         // responds for posting data from webpage to server
+      const result = await fetch(url);
 
-   new MenuCard(
-      "img/tabs/elite.jpg",
-      "elite",
-      'Меню "“Премиум”"',
-      'В меню “Премиум” мы используем не только красивый дизайн упаковки, но и качественное исполнение блюд.Красная рыба, морепродукты, фрукты - ресторанное меню без похода в ресторан!',
-      19,
-      '.menu .container',
 
-   ).render();
+      return await result.json();
+   };
 
-   new MenuCard(
-      "img/tabs/post.jpg",
-      "post",
-      'Меню "Постное"',
-      'Меню “Постное” - это тщательный подбор ингредиентов: полное отсутствие продуктов животного происхождения, молоко из миндаля, овса, кокоса или гречки, правильное количество белков за счет тофу и импортных вегетарианских стейков.',
-      13,
-      '.menu .container',
-      'menu__item'
-   ).render();
+   // getResources('http://localhost:3000/menu')         //from server we get array with info
+   // .then(data => {            //then we use forEach to sort our obj
+   //    data.forEach(({ img, altimg, title, descr, price }) => {       // we use destructurisation for that object
+   //       new MenuCard(img, altimg, title, descr, price, '.menu .container').render();      // then we push them to our constructor, and result method, which we created
+   //    });
+   //    });
 
+   axios.get('http://localhost:3000/menu')
+      .then(data => {            //then we use forEach to sort our obj
+         data.data.forEach(({ img, altimg, title, descr, price }) => {       // we use destructurisation for that object
+            new MenuCard(img, altimg, title, descr, price, '.menu .container').render();      // then we push them to our constructor, and result method, which we created
+         });
+      });
    // Forms
 
    const forms = document.querySelectorAll('form');      //taking our forms
@@ -229,10 +219,23 @@ window.addEventListener('DOMContentLoaded', () => {
    };
 
    forms.forEach(item => {    //adding func to our forms
-      postData(item);
+      bindPostData(item);
    });
 
-   function postData(form) {     //func for our requests
+
+   const postData = async (url, data) => {         // responds for posting data from webpage to server
+      const result = await fetch(url, {
+         method: "POST",
+         headers: {
+            'Content-type': 'application/json'
+         },
+         body: data
+      });
+      return await result.json();
+   };
+
+
+   function bindPostData(form) {     //func for  binding our data requests to forms on website
       form.addEventListener('submit', (e) => {        //event for forms
          e.preventDefault();
 
@@ -243,23 +246,11 @@ window.addEventListener('DOMContentLoaded', () => {
          form.insertAdjacentElement('afterend', statusMessage);      //adding to the HTML
 
 
-         const formData = new FormData(form);      // creating obj FormData as a constructor
+         const formData = new FormData(form);      // creating obj FormData as a constructor, form is a window where we write info, formData collect our info from form
 
-         const obj = {};      // creating obj to change it to JSON
+         const json = JSON.stringify(Object.fromEntries(formData.entries()));          // than we transform it to array of arrays, that transform to the classic obj, than we transform it to json format
 
-         formData.forEach(function (value, key) {     //using method for each, because we can't change FormData(it's special obj)
-            obj[key] = value;          //adding  everything to obj
-         });
-
-
-
-         fetch('server.php', {         //sending data via fetch API(way)
-            method: "POST",      //choosing method
-            headers: {
-               'Content-type': 'application/json'
-            },
-            body: JSON.stringify(obj)     //body is an obj changed to JSON
-         }).then(data => data.text())     //if ok, showing our data as text
+         postData('http://localhost:3000/requests', json)        //sending data via fetch API(way), and than send it in json format to our server
             .then(data => {
                console.log(data);
                showThanksModal(message.success);      //if ok, showing good msg
@@ -299,15 +290,6 @@ window.addEventListener('DOMContentLoaded', () => {
       }, 4000);
    }
 
-   fetch('http://localhost:3000/menu')
-      .then(data => data.json())
-      .then(res => console.log(res));
 
 
 });
-
-
-
-
-
-
