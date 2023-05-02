@@ -289,7 +289,76 @@ window.addEventListener('DOMContentLoaded', () => {
          closeModal();
       }, 4000);
    }
+   let slidersIndex = 1;      //adding index for our slides
+   let offset = 0;
+   const currentId = document.querySelector('#current'),
+      totalId = document.querySelector('#total'),
+      sliders = document.querySelectorAll('.offer__slide'),
+      pointPrev = document.querySelector('.offer__slider-prev'),
+      pointNext = document.querySelector('.offer__slider-next'),
+      slidersWrapper = document.querySelector('.offer__slider-wrapper'),
+      slidersField = document.querySelector('.offer__slider-inner'),
+      width = window.getComputedStyle(slidersWrapper).width;
 
+   slidersField.style.width = `${100 * sliders.length}%`;
+   slidersField.style.display = 'flex';
+   slidersField.style.transition = '0.5s all';
+   slidersWrapper.style.overflow = 'hidden';
+   sliders.forEach(slide => {
+      slide.style.width = width;
+   });
+
+   if (sliders.length < 10) {
+      totalId.textContent = `0${sliders.length}`;        //if slider less than 10, than adding 0 befoure counting
+      currentId.textContent = `0${slidersIndex}`;
+   } else {
+      totalId.textContent = sliders.length;
+      currentId.textContent = slidersIndex;
+   }
+
+   console.log(width);
+   pointNext.addEventListener('click', () => {
+      if (offset == +width.slice(0, width.length - 2) * (sliders.length - 1)) {
+         offset = 0;
+      } else {
+         offset += +width.slice(0, width.length - 2);
+      }
+      slidersField.style.transform = `translateX(-${offset}px)`;
+
+      if (slidersIndex == sliders.length) {
+         slidersIndex = 1;
+      } else {
+         slidersIndex++;
+      }
+
+      if (slidersIndex < 10) {
+         currentId.textContent = `0${slidersIndex}`;
+      } else {
+         currentId.textContent = slidersIndex;
+      }
+   });
+
+   pointPrev.addEventListener('click', () => {
+      if (offset == 0) {
+         offset = +width.slice(0, width.length - 2) * (sliders.length - 1);
+      } else {
+         offset -= width.slice(0, width.length - 2);
+      }
+      slidersField.style.transform = `translateX(-${offset}px)`;
+
+      if (slidersIndex == 1) {
+         slidersIndex = sliders.length;
+      } else {
+         slidersIndex--;
+      }
+
+      if (slidersIndex < 10) {
+         currentId.textContent = `0${slidersIndex}`;
+      } else {
+         currentId.textContent = slidersIndex;
+      }
+
+   });
 
 
 });
